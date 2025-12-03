@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cute Sweater Designer</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #ffd9ec, #fff1f7);
+      font-family: Comic Sans MS, cursive;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      color: #ff6fae;
+      margin-top: 15px;
+    }
+
+    .designer {
+      position: relative;
+      width: 320px;
+      height: 380px;
+      margin: auto;
+      border-radius: 30px;
+      background: transparent;
+      margin-top: 20px;
+    }
+
+    .sticker {
+      position: absolute;
+      width: 70px;
+      cursor: grab;
+      z-index: 2;
+    }
+#sweater {
+  width: 150%;
+  height: 150%;
+  object-fit: contain;
+  position: absolute;
+  z-index: 1;
+  top: -100px;
+  left:-25px;
+pointer-events: none;
+}
+
+    .controls {
+      background: #ffe3f3;
+      margin-top: -20px;
+      padding: 12px;
+      border-radius: 25px;
+      width: 92%;
+      max-width: 380px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 8px 20px rgba(255, 110, 170, 0.25);
+    }
+
+    .iconBtn {
+      width: 36px;
+      margin: 6px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .iconBtn:hover {
+      transform: scale(1.2);
+    }
+
+    button {
+      background: #ff6fae;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 25px;
+      margin: 5px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    button:hover {
+      background: #ff4f9a;
+    }
+
+    input[type="range"] {
+      width: 160px;
+      accent-color: #ff6fae;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #b3005e;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎀 Cute Sweater Designer 🎀</h1>
+
+<div class="designer" id="designer">
+  <img src="images/sweater.png" id="sweater">
+</div>
+
+<div class="controls">
+
+  <!-- ✅ STICKERS -->
+  <img src="images/Berry.png" class="iconBtn" onclick="addSticker('images/Berry.png')">
+  <img src="images/Blueflower.png" class="iconBtn" onclick="addSticker('images/Blueflower.png')">
+  <img src="images/bouquet.png" class="iconBtn" onclick="addSticker('images/bouquet.png')">
+  <img src="images/Butterfly1.png" class="iconBtn" onclick="addSticker('images/Butterfly1.png')">
+  <img src="images/Cherry.png" class="iconBtn" onclick="addSticker('images/Cherry.png')">
+  <img src="images/cherryFlower.png" class="iconBtn" onclick="addSticker('images/cherryFlower.png')">
+  <img src="images/Clover.png" class="iconBtn" onclick="addSticker('images/Clover.png')">
+  <img src="images/glitter.png" class="iconBtn" onclick="addSticker('images/glitter.png')">
+  <img src="images/pinkBow.png" class="iconBtn" onclick="addSticker('images/pinkBow.png')">
+  <img src="images/Prettybow.png" class="iconBtn" onclick="addSticker('images/Prettybow.png')">
+  <img src="images/Sunflower.png" class="iconBtn" onclick="addSticker('images/Sunflower.png')">
+
+  <hr>
+
+  <!-- ✅ RESIZE SLIDER -->
+  <div>
+    Resize Sticker 💗 <br>
+    <input type="range" min="30" max="160" value="70" oninput="resizeSticker(this.value)">
+  </div>
+
+  <!-- ✅ CONTROL BUTTONS -->
+  <div>
+    <button onclick="deleteSelected()">Delete</button>
+    <button onclick="undoSticker()">Undo</button>
+    <button onclick="saveDesign()">Save Image</button>
+  </div>
+
+  <div class="hint">
+    Select 💖 Drag 🌸 Resize with slider 🎀 Undo ⏪ Save 📸
+  </div>
+
+</div>
+
+<canvas id="canvas" width="320" height="380" style="display:none;"></canvas>
+
+<script>
+  let selectedSticker = null;
+  let stickerHistory = [];
+
+  function addSticker(src) {
+    const sticker = document.createElement("img");
+    sticker.src = src;
+    sticker.className = "sticker";
+    sticker.style.left = "120px";
+    sticker.style.top = "150px";
+    sticker.style.width = "70px";
+
+    document.getElementById("designer").appendChild(sticker);
+    stickerHistory.push(sticker);
+
+    sticker.onclick = () => selectSticker(sticker);
+
+    let isDragging = false, offsetX = 0, offsetY = 0;
+
+    sticker.onmousedown = function (e) {
+      isDragging = true;
+      offsetX = e.offsetX;
+      offsetY = e.offsetY;
+    };
+
+    document.onmousemove = function (e) {
+      if (!isDragging) return;
+      const rect = document.getElementById("designer").getBoundingClientRect();
+      sticker.style.left = e.clientX - rect.left - offsetX + "px";
+      sticker.style.top = e.clientY - rect.top - offsetY + "px";
+    };
+
+    document.onmouseup = () => isDragging = false;
+  }
+
+  function selectSticker(sticker) {
+    if (selectedSticker) selectedSticker.style.outline = "none";
+    selectedSticker = sticker;
+    sticker.style.outline = "3px dashed #ff6fae";
+  }
+
+  function resizeSticker(value) {
+    if (selectedSticker) {
+      selectedSticker.style.width = value + "px";
+    }
+  }
+
+  function deleteSelected() {
+    if (selectedSticker) {
+      selectedSticker.remove();
+      selectedSticker = null;
+    }
+  }
+
+  function undoSticker() {
+    const last = stickerHistory.pop();
+    if (last) last.remove();
+  }
+
+  function saveDesign() {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const sweater = document.getElementById("sweater");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(sweater, 0, 0, 320, 380);
+
+    const stickers = document.querySelectorAll(".sticker");
+    stickers.forEach(sticker => {
+      const x = parseInt(sticker.style.left);
+      const y = parseInt(sticker.style.top);
+      const w = sticker.offsetWidth;
+      ctx.drawImage(sticker, x, y, w, w);
+    });
+
+    const link = document.createElement("a");
+    link.download = "my_sweater_design.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }
+</script>
+
+</body>
+</html>
